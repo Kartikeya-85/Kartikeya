@@ -1,0 +1,119 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Reminder App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-roboto">
+    <div class="container mx-auto p-4">
+        <header class="flex justify-between items-center py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Medicine Reminder</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="#" class="text-gray-600 hover:text-gray-800">Home</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-gray-800">About</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-gray-800">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="mt-8">
+            <section class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Medicine</h2>
+                <form id="medicine-form" class="space-y-4">
+                    <div>
+                        <label for="medicine-name" class="block text-gray-700">Medicine Name</label>
+                        <input type="text" id="medicine-name" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Enter medicine name" required>
+                    </div>
+                    <div>
+                        <label for="dosage" class="block text-gray-700">Dosage</label>
+                        <input type="text" id="dosage" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Enter dosage" required>
+                    </div>
+                    <div>
+                        <label for="time" class="block text-gray-700">Time</label>
+                        <input type="time" id="time" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Add Medicine</button>
+                </form>
+            </section>
+
+            <section class="mt-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Reminders</h2>
+                <div id="reminders" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <!-- Medicine reminders will be added here dynamically -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('medicine-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const medicineName = document.getElementById('medicine-name').value;
+            const dosage = document.getElementById('dosage').value;
+            const time = document.getElementById('time').value;
+
+            const reminderContainer = document.createElement('div');
+            reminderContainer.classList.add('flex', 'justify-between', 'items-center', 'p-4', 'border-b', 'border-gray-200');
+
+            const reminderDetails = document.createElement('div');
+            const reminderTitle = document.createElement('h3');
+            reminderTitle.classList.add('text-lg', 'font-medium', 'text-gray-800');
+            reminderTitle.textContent = medicineName;
+            const reminderInfo = document.createElement('p');
+            reminderInfo.classList.add('text-gray-600');
+            reminderInfo.textContent = `${dosage} - ${time}`;
+
+            reminderDetails.appendChild(reminderTitle);
+            reminderDetails.appendChild(reminderInfo);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('text-red-500', 'hover:text-red-600');
+            deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            deleteButton.addEventListener('click', function() {
+                reminderContainer.remove();
+            });
+
+            reminderContainer.appendChild(reminderDetails);
+            reminderContainer.appendChild(deleteButton);
+
+            document.getElementById('reminders').appendChild(reminderContainer);
+
+            // Schedule notification
+            scheduleNotification(medicineName, dosage, time);
+
+            // Clear the form
+            document.getElementById('medicine-form').reset();
+        });
+
+        function scheduleNotification(medicineName, dosage, time) {
+            const now = new Date();
+            const [hours, minutes] = time.split(':');
+            const notificationTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+
+            if (notificationTime < now) {
+                notificationTime.setDate(notificationTime.getDate() + 1);
+            }
+
+            const timeout = notificationTime - now;
+
+            setTimeout(() => {
+                if (Notification.permission === 'granted') {
+                    new Notification('Medicine Reminder', {
+                        body: `${medicineName} - ${dosage}`,
+                        icon: 'https://placehold.co/100x100?text=Medicine+Icon&bg=blue&fg=white'
+                    });
+                }
+            }, timeout);
+        }
+
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    </script>
+</body>
+</html>
